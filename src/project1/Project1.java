@@ -30,7 +30,7 @@ public class Project1 {
      */
     public static void main(String[] args) {
         // Loading problems from files
-        ArrayList<ProblemSet> sets = new ArrayList<ProblemSet>();       // The variable 'sets' stores multiple problem sets.
+		ArrayList<ProblemSet> sets = new ArrayList<ProblemSet>();       // The variable 'sets' stores multiple problem sets.
                                                                         // Each problem set comes from a different folder in /Problems/
                                                                         // Additional sets of problems will be used when grading projects.
                                                                         // You may also write your own problems.
