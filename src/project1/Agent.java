@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.sun.org.apache.bcel.internal.generic.I2F;
 
 /**
  * Your Agent for solving Raven's Progressive Matrices. You MUST modify this
@@ -29,8 +28,18 @@ public class Agent {
 	 * main().
 	 * 
 	 */
+	//used to test an assumptions strength 
+	//i.e. if a tranformation has a strong similarity weight than the
+	//AI can make tolerance levels to arrive at the best answer
+	public HashMap<String, Integer> Weights;
+	
 	public Agent() {
-
+		Weights = new HashMap<String, Integer>();
+		Weights.put("Unchanged", 5);
+		Weights.put("Reflected", 4);
+		Weights.put("Scaled", 2);
+		Weights.put("Deleted", 1);
+		Weights.put("ShapeChanged", 0);
 	}
 
 	/**
@@ -60,8 +69,9 @@ public class Agent {
 	 * @return your Agent's answer to this problem
 	 */
 	public String Solve(RavensProblem problem) {
+		
 		HashMap<String, RavensFigure> figure = problem.getFigures();
-		getChoices(problem.getFigures());
+		ArrayList<RavensFigure> choices = getChoices(problem.getFigures());
 		RavensFigure three = figure.get("3");
 		ArrayList<RavensObject> objects = three.getObjects();
 		for (RavensObject ravensObject : three.getObjects()) {
@@ -86,9 +96,58 @@ public class Agent {
 			if (pairs.getKey().toString().matches("-?\\d+(\\.\\d+)?")) {
 				list.add((RavensFigure) pairs.getValue());
 			}
-			it.remove(); // avoids a ConcurrentModificationException
+			//it.remove(); // avoids a ConcurrentModificationException
 		}
 		return list;
+	}
+	public int getTranformStrength(RavensObject a, RavensObject b) {
+		
+		int strength = 0;
+		return strength;
+		
+	}
+	public boolean isRotation() {
+		return false;
+	}
+	public boolean isDeletion() {
+		return false;
+	}
+	public boolean isReflection() {
+		return false;
+	}
+	public boolean isUnchanged() {
+		return false;
+	}
+	public boolean isScaled() {
+		return false;	
+	}
+	public boolean isShapeChanged() {
+		return false;
+	}
+	
+	public int getSides(String shape) {
+		switch (shape) {
+		case "triangle":
+			return 3;
+		case "square":
+			return 4;
+		case "pentagon":
+			return 5;
+		case "hexagon":
+			return 6;
+		case "heptagon":
+			return 7;
+		case "octagon":
+			return 8;
+		case "nonagon":
+			return 9;
+		case "decagon":
+			return 10;
+		default:
+			break;
+		}
+		return 0;
+		
 	}
 
 }
