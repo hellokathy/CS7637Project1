@@ -1,8 +1,11 @@
 package project1;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -29,7 +32,7 @@ public class Agent {
 	 * 
 	 */
 	//used to test an assumptions strength 
-	//i.e. if a tranformation has a strong similarity weight than the
+	//i.e. if a transformation has a strong similarity weight than the
 	//AI can make tolerance levels to arrive at the best answer
 	public HashMap<String, Integer> Weights;
 	
@@ -70,8 +73,10 @@ public class Agent {
 	 */
 	public String Solve(RavensProblem problem) {
 		
+		//seperate problems from possible choices
 		HashMap<String, RavensFigure> figure = problem.getFigures();
-		ArrayList<RavensFigure> choices = getChoices(problem.getFigures());
+		HashMap<String, RavensFigure> choices = getChoices(problem.getFigures());
+		HashMap<String, RavensFigure> problems = getProblems(problem.getFigures());
 		RavensFigure three = figure.get("3");
 		ArrayList<RavensObject> objects = three.getObjects();
 		for (RavensObject ravensObject : three.getObjects()) {
@@ -83,10 +88,10 @@ public class Agent {
 		return "1";
 	}
 
-	public ArrayList<RavensFigure> getChoices(
+	public HashMap<String, RavensFigure> getChoices(
 			HashMap<String, RavensFigure> figures) {
 		
-		ArrayList<RavensFigure> list = new ArrayList<RavensFigure>();
+		HashMap<String, RavensFigure> list = new HashMap<String, RavensFigure>();
 		Iterator<Entry<String, RavensFigure>> it = figures.entrySet()
 				.iterator();
 		while (it.hasNext()) {
@@ -94,14 +99,35 @@ public class Agent {
 					.next();
 			System.out.println(pairs.getKey() + " = " + pairs.getValue());
 			if (pairs.getKey().toString().matches("-?\\d+(\\.\\d+)?")) {
-				list.add((RavensFigure) pairs.getValue());
+				list.put(pairs.getKey().toString(), (RavensFigure) pairs.getValue());
+			}
+			//it.remove(); // avoids a ConcurrentModificationException
+		}
+		return list;
+	}
+	
+	
+	public HashMap<String, RavensFigure> getProblems(
+			HashMap<String, RavensFigure> figures) {
+		
+		HashMap<String, RavensFigure> list = new HashMap<String, RavensFigure>();
+		Iterator<Entry<String, RavensFigure>> it = figures.entrySet()
+				.iterator();
+		while (it.hasNext()) {
+			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it
+					.next();
+			System.out.println(pairs.getKey() + " = " + pairs.getValue());
+			if (!pairs.getKey().toString().matches("-?\\d+(\\.\\d+)?")) {
+				list.put(pairs.getKey().toString(), (RavensFigure) pairs.getValue());
 			}
 			//it.remove(); // avoids a ConcurrentModificationException
 		}
 		return list;
 	}
 	public int getTranformStrength(RavensObject a, RavensObject b) {
-		
+		for (RavensAttribute attribute : a.getAttributes()) {
+			
+		}
 		int strength = 0;
 		return strength;
 		
@@ -124,6 +150,22 @@ public class Agent {
 	public boolean isShapeChanged() {
 		return false;
 	}
+
+//	public int getOrderByStrength(String studentName) {
+//		List<String> studentsList = new ArrayList<String>();
+//		List<Entry<Student, Double>> list = new ArrayList<Entry<Student, Double>>(
+//				getAllGrades().entrySet());
+//		Collections.sort(list, new Comparator<Map.Entry<Student, Double>>() {
+//			public int compare(Map.Entry<Student, Double> o1,
+//					Map.Entry<Student, Double> o2) {
+//				return (o2.getValue()).compareTo(o1.getValue());
+//			}
+//		});
+//		for (Map.Entry<Student, Double> entry : list) {
+//			studentsList.add(entry.getKey().getName());
+//		}
+//		return studentsList.indexOf(studentName) + 1;
+//	}
 	
 	public int getSides(String shape) {
 		switch (shape) {
