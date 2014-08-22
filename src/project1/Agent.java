@@ -75,15 +75,10 @@ public class Agent {
 
 		// seperate problems from possible choices
 		System.out.println(problem.getName());
-		HashMap<String, RavensFigure> choices = getChoices(problem.getFigures());
-		HashMap<String, RavensFigure> problems = getProblems(problem
-				.getFigures());
-		getTranformStrength(problems.get("A").getObjects(), problems.get("B")
-				.getObjects());
-		System.out
-				.println("---------------------------------------------------------");
-		
-		deriveBestChoice(problems.get("B"), choices);
+		HashMap<String, RavensFigure> problems = getProblems(problem.getFigures());
+		getTranformStrength(problems.get("A").getObjects(), problems.get("B").getObjects());
+		System.out.println("---------------------------------------------------------");
+		deriveBestChoice(problems.get("B"), getChoices(problem.getFigures()));
 		return "1";
 	}
 	public String deriveBestChoice(RavensFigure problem, HashMap<String, RavensFigure> choices) {
@@ -107,6 +102,7 @@ public class Agent {
 	
 	public HashMap<String, RavensFigure> getChoices(
 			HashMap<String, RavensFigure> figures) {
+		
 		HashMap<RavensFigure, Integer> possible = new HashMap<>();
 		HashMap<String, RavensFigure> list = new HashMap<String, RavensFigure>();
 		Iterator<Entry<String, RavensFigure>> it = figures.entrySet()
@@ -120,7 +116,6 @@ public class Agent {
 						(RavensFigure) pairs.getValue());
 				possible.put((RavensFigure) pairs.getValue(), randInt(0, 20));
 			}
-			// it.remove(); // avoids a ConcurrentModificationException
 		}
 
 		List<String> sorted = getOrderByStrength(possible);
