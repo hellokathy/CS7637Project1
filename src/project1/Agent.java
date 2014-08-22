@@ -84,7 +84,8 @@ public class Agent {
 	public String deriveBestChoice(RavensFigure problem, HashMap<String, RavensFigure> choices) {
 		HashMap<RavensFigure, Integer> choiceStrength = buildStrengthMap(choices);
 		choiceStrength.put(choices.get("1"), choiceStrength.get(choices.get("1"))+1);
-		return null;
+		List<String> sorted = getOrderByStrength(choiceStrength);
+		return sorted.get(0);
 	}
 	
 	public HashMap<RavensFigure, Integer> buildStrengthMap(HashMap<String, RavensFigure> choices) {
@@ -117,9 +118,6 @@ public class Agent {
 				possible.put((RavensFigure) pairs.getValue(), randInt(0, 20));
 			}
 		}
-
-		List<String> sorted = getOrderByStrength(possible);
-
 		return list;
 	}
 
@@ -152,13 +150,11 @@ public class Agent {
 				}
 			}
 		}
-		int strength = 0;
-		return strength;
-
+		return 0;
 	}
 	
-	public int compareAttributes(ArrayList<RavensAttribute> a,
-			ArrayList<RavensAttribute> b) {
+	public int compareAttributes(ArrayList<RavensAttribute> a,ArrayList<RavensAttribute> b) {
+	
 		for (RavensAttribute obj : a) {
 			for (RavensAttribute object : b) {
 				if (object.getName().equals(obj.getName())) {
@@ -168,8 +164,7 @@ public class Agent {
 				}
 			}
 		}
-		int strength = 0;
-		return strength;
+		return 0;
 
 	}
 
