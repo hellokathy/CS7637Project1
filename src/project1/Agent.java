@@ -83,21 +83,29 @@ public class Agent {
 		System.out
 				.println("---------------------------------------------------------");
 		
-		
+		deriveBestChoice(problems.get("B"), choices);
 		return "1";
 	}
 	public String deriveBestChoice(RavensFigure problem, HashMap<String, RavensFigure> choices) {
-		HashMap<RavensFigure, Integer> choiceStrength = new HashMap<RavensFigure, Integer>();
-		
+		HashMap<RavensFigure, Integer> choiceStrength = buildStrengthMap(choices);
+
 		return null;
 	
 	}
+	
 	public HashMap<RavensFigure, Integer> buildStrengthMap(HashMap<String, RavensFigure> choices) {
-		
-		
-		return null;
+		HashMap<RavensFigure, Integer> strengthMap = new HashMap<RavensFigure, Integer>();
+		Iterator<Entry<String, RavensFigure>> it = choices.entrySet()
+				.iterator();
+		while (it.hasNext()) {
+			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it
+					.next();
+			strengthMap.put((RavensFigure) pairs.getValue(), 0);
+		}
+		return strengthMap;
 		
 	}
+	
 	public HashMap<String, RavensFigure> getChoices(
 			HashMap<String, RavensFigure> figures) {
 		HashMap<RavensFigure, Integer> possible = new HashMap<>();
