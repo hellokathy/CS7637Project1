@@ -154,8 +154,9 @@ public class Agent {
 		}
 		int strength = 0;
 		return strength;
-	}
 
+	}
+	
 	public int compareAttributes(ArrayList<RavensAttribute> a,
 			ArrayList<RavensAttribute> b) {
 		for (RavensAttribute obj : a) {
