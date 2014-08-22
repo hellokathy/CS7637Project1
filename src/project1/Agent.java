@@ -134,6 +134,7 @@ public class Agent {
 		
 	}
 	
+	
 	public int compareAttributes(ArrayList<RavensAttribute> a, ArrayList<RavensAttribute> b) {
 		for (RavensAttribute obj : a) {
 			for (RavensAttribute object : b) {
