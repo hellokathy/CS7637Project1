@@ -88,9 +88,8 @@ public class Agent {
 	}
 	public String deriveBestChoice(RavensFigure problem, HashMap<String, RavensFigure> choices) {
 		HashMap<RavensFigure, Integer> choiceStrength = buildStrengthMap(choices);
-
+		choiceStrength.put(choices.get("1"), choiceStrength.get(choices.get("1"))+1);
 		return null;
-	
 	}
 	
 	public HashMap<RavensFigure, Integer> buildStrengthMap(HashMap<String, RavensFigure> choices) {
@@ -139,12 +138,10 @@ public class Agent {
 		while (it.hasNext()) {
 			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it
 					.next();
-			// System.out.println(pairs.getKey() + " = " + pairs.getValue());
 			if (!pairs.getKey().toString().matches("-?\\d+(\\.\\d+)?")) {
 				list.put(pairs.getKey().toString(),
 						(RavensFigure) pairs.getValue());
 			}
-			// it.remove(); // avoids a ConcurrentModificationException
 		}
 		return list;
 	}
