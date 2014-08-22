@@ -147,6 +147,7 @@ public class Agent {
 		return strength;
 		
 	}
+	
 	public boolean isRotation() {
 		return false;
 	}
