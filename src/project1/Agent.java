@@ -74,17 +74,11 @@ public class Agent {
 	public String Solve(RavensProblem problem) {
 		
 		//seperate problems from possible choices
-		HashMap<String, RavensFigure> figure = problem.getFigures();
+		System.out.println(problem.getName());
 		HashMap<String, RavensFigure> choices = getChoices(problem.getFigures());
 		HashMap<String, RavensFigure> problems = getProblems(problem.getFigures());
-		RavensFigure three = figure.get("3");
-		ArrayList<RavensObject> objects = three.getObjects();
-		for (RavensObject ravensObject : three.getObjects()) {
-			ArrayList<RavensAttribute> atrbArrayList = ravensObject
-					.getAttributes();
-			RavensAttribute attribute = atrbArrayList.get(0);
-
-		}
+		getTranformStrength(problems.get("A").getObjects(), problems.get("B").getObjects());
+		System.out.println("---------------------------------------------------------");
 		return "1";
 	}
 
@@ -97,7 +91,7 @@ public class Agent {
 		while (it.hasNext()) {
 			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it
 					.next();
-			System.out.println(pairs.getKey() + " = " + pairs.getValue());
+			//System.out.println(pairs.getKey() + " = " + pairs.getValue());
 			if (pairs.getKey().toString().matches("-?\\d+(\\.\\d+)?")) {
 				list.put(pairs.getKey().toString(), (RavensFigure) pairs.getValue());
 			}
@@ -116,7 +110,7 @@ public class Agent {
 		while (it.hasNext()) {
 			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it
 					.next();
-			System.out.println(pairs.getKey() + " = " + pairs.getValue());
+			//System.out.println(pairs.getKey() + " = " + pairs.getValue());
 			if (!pairs.getKey().toString().matches("-?\\d+(\\.\\d+)?")) {
 				list.put(pairs.getKey().toString(), (RavensFigure) pairs.getValue());
 			}
@@ -124,9 +118,30 @@ public class Agent {
 		}
 		return list;
 	}
-	public int getTranformStrength(RavensObject a, RavensObject b) {
-		for (RavensAttribute attribute : a.getAttributes()) {
-			
+	
+	public int getTranformStrength(ArrayList<RavensObject> a, ArrayList<RavensObject> b) {
+		for (RavensObject obj : a) {
+			for (RavensObject object : b) {
+				if(object.getName().equals(obj.getName())){
+					System.out.println(obj.getName() + ":" +object.getName());
+					compareAttributes(obj.getAttributes(), object.getAttributes());
+					
+				}
+			}
+		}
+		int strength = 0;
+		return strength;
+		
+	}
+	
+	public int compareAttributes(ArrayList<RavensAttribute> a, ArrayList<RavensAttribute> b) {
+		for (RavensAttribute obj : a) {
+			for (RavensAttribute object : b) {
+				if(object.getName().equals(obj.getName())){
+					System.out.println(obj.getName() + ":" +obj.getValue());
+					System.out.println(object.getName() + ":" + object.getValue());
+				}
+			}
 		}
 		int strength = 0;
 		return strength;
