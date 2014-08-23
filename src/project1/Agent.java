@@ -34,15 +34,18 @@ public class Agent {
 	// used to test an assumptions strength
 	// i.e. if a transformation has a strong similarity weight than the
 	// AI can make tolerance levels to arrive at the best answer
-	public HashMap<String, Integer> Weights;
+	public HashMap<RavensFigure, Integer> choiceWeights;
 
+	public HashMap<String, RavensFigure> choices;
+	public HashMap<String, RavensFigure> problems;
+	
 	public Agent() {
-		Weights = new HashMap<String, Integer>();
-		Weights.put("Unchanged", 5);
-		Weights.put("Reflected", 4);
-		Weights.put("Scaled", 2);
-		Weights.put("Deleted", 1);
-		Weights.put("ShapeChanged", 0);
+//		Weights = new HashMap<String, Integer>();
+//		Weights.put("Unchanged", 5);
+//		Weights.put("Reflected", 4);
+//		Weights.put("Scaled", 2);
+//		Weights.put("Deleted", 1);
+//		Weights.put("ShapeChanged", 0);
 	}
 
 	/**
@@ -75,68 +78,54 @@ public class Agent {
 
 		// seperate problems from possible choices
 		System.out.println(problem.getName());
-		HashMap<String, RavensFigure> problems = getProblems(problem.getFigures());
+		
+		problems = new HashMap<String, RavensFigure>();
+		choices = new HashMap<String, RavensFigure>();
+		choiceWeights = new HashMap<RavensFigure, Integer>();
+		
+		seperateProblemsAndChoices(problem.getFigures());
+		buildStrengthMap();
+		
 		getTranformStrength(problems.get("A").getObjects(), problems.get("B").getObjects());
 		System.out.println("---------------------------------------------------------");
-		deriveBestChoice(problems.get("B"), getChoices(problem.getFigures()));
+		deriveBestChoice(problems.get("B"));
+	
 		return "1";
 	}
-	public String deriveBestChoice(RavensFigure problem, HashMap<String, RavensFigure> choices) {
-		HashMap<RavensFigure, Integer> choiceStrength = buildStrengthMap(choices);
-		choiceStrength.put(choices.get("1"), choiceStrength.get(choices.get("1"))+1);
-		List<String> sorted = getOrderByStrength(choiceStrength);
+	public String deriveBestChoice(RavensFigure problem) {
+		
+		List<String> sorted = getOrderByStrength(choiceWeights);
 		return sorted.get(0);
 	}
 	
-	public HashMap<RavensFigure, Integer> buildStrengthMap(HashMap<String, RavensFigure> choices) {
-		HashMap<RavensFigure, Integer> strengthMap = new HashMap<RavensFigure, Integer>();
+	public void buildStrengthMap() {
+	
 		Iterator<Entry<String, RavensFigure>> it = choices.entrySet()
 				.iterator();
 		while (it.hasNext()) {
-			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it
-					.next();
-			strengthMap.put((RavensFigure) pairs.getValue(), 0);
-		}
-		return strengthMap;
-		
+			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it.next();
+			choiceWeights.put((RavensFigure) pairs.getValue(), 0);
+		}	
 	}
 	
-	public HashMap<String, RavensFigure> getChoices(
-			HashMap<String, RavensFigure> figures) {
+	public  void incrementStrength(String choice) {
 		
-		HashMap<RavensFigure, Integer> possible = new HashMap<>();
-		HashMap<String, RavensFigure> list = new HashMap<String, RavensFigure>();
-		Iterator<Entry<String, RavensFigure>> it = figures.entrySet()
-				.iterator();
-		while (it.hasNext()) {
-			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it
-					.next();
-			// System.out.println(pairs.getKey() + " = " + pairs.getValue());
-			if (pairs.getKey().toString().matches("-?\\d+(\\.\\d+)?")) {
-				list.put(pairs.getKey().toString(),
-						(RavensFigure) pairs.getValue());
-				possible.put((RavensFigure) pairs.getValue(), randInt(0, 20));
-			}
-		}
-		return list;
+		choiceWeights.put(choices.get(choice), choiceWeights.get(choices.get(choice)) + 1);
 	}
-
-	
-	public HashMap<String, RavensFigure> getProblems(
-			HashMap<String, RavensFigure> figures) {
-
-		HashMap<String, RavensFigure> list = new HashMap<String, RavensFigure>();
+		
+	public void seperateProblemsAndChoices(HashMap<String, RavensFigure> figures) {
 		Iterator<Entry<String, RavensFigure>> it = figures.entrySet()
 				.iterator();
 		while (it.hasNext()) {
 			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it
 					.next();
 			if (!pairs.getKey().toString().matches("-?\\d+(\\.\\d+)?")) {
-				list.put(pairs.getKey().toString(),
-						(RavensFigure) pairs.getValue());
+				problems.put(pairs.getKey().toString(),(RavensFigure) pairs.getValue());
+			}
+			else {
+				choices.put(pairs.getKey().toString(),(RavensFigure) pairs.getValue());
 			}
 		}
-		return list;
 	}
 
 	public int getTranformStrength(ArrayList<RavensObject> a,
@@ -159,8 +148,7 @@ public class Agent {
 			for (RavensAttribute object : b) {
 				if (object.getName().equals(obj.getName())) {
 					System.out.println(obj.getName() + ":" + obj.getValue());
-					System.out.println(object.getName() + ":"
-							+ object.getValue());
+					System.out.println(object.getName() + ":" + object.getValue());
 				}
 			}
 		}
@@ -177,8 +165,7 @@ public class Agent {
 		return null;
 	}
 
-	public List<String> getOrderByStrength(
-			HashMap<RavensFigure, Integer> choices) {
+	public List<String> getOrderByStrength(HashMap<RavensFigure, Integer> choices) {
 		List<String> choiceList = new ArrayList<String>();
 		List<Entry<RavensFigure, Integer>> list = new ArrayList<Entry<RavensFigure, Integer>>(
 				choices.entrySet());
