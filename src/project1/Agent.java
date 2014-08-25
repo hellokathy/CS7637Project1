@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Map.Entry;
 
+import javax.security.sasl.RealmCallback;
+
 /**
  * Your Agent for solving Raven's Progressive Matrices. You MUST modify this
  * file.
@@ -35,17 +37,17 @@ public class Agent {
 	// i.e. if a transformation has a strong similarity weight than the
 	// AI can make tolerance levels to arrive at the best answer
 	public HashMap<RavensFigure, Integer> choiceWeights;
-
 	public HashMap<String, RavensFigure> choices;
 	public HashMap<String, RavensFigure> problems;
-	
+	public HashMap<String, Releationship> relationships;
+
 	public Agent() {
-//		Weights = new HashMap<String, Integer>();
-//		Weights.put("Unchanged", 5);
-//		Weights.put("Reflected", 4);
-//		Weights.put("Scaled", 2);
-//		Weights.put("Deleted", 1);
-//		Weights.put("ShapeChanged", 0);
+		// Weights = new HashMap<String, Integer>();
+		// Weights.put("Unchanged", 5);
+		// Weights.put("Reflected", 4);
+		// Weights.put("Scaled", 2);
+		// Weights.put("Deleted", 1);
+		// Weights.put("ShapeChanged", 0);
 	}
 
 	/**
@@ -76,43 +78,127 @@ public class Agent {
 	 */
 	public String Solve(RavensProblem problem) {
 
-		// seperate problems from possible choices
+		// Separate problems from possible choices
 		System.out.println(problem.getName());
-		
+
 		problems = new HashMap<String, RavensFigure>();
 		choices = new HashMap<String, RavensFigure>();
 		choiceWeights = new HashMap<RavensFigure, Integer>();
-		
+		relationships = new HashMap<String, Releationship>();
+
 		seperateProblemsAndChoices(problem.getFigures());
 		buildStrengthMap();
-		
-		getTranformStrength(problems.get("A").getObjects(), problems.get("B").getObjects());
-		System.out.println("---------------------------------------------------------");
-		deriveBestChoice(problems.get("B"));
-	
-		return "1";
+		genertateMatrixMap(problem.getProblemType());
+
+		relationships.put("AB", buildReleationship(problems.get("A"), problems.get("B")));
+		getTranformStrength(problems.get("A").getObjects(), problems.get("B")
+				.getObjects());
+		System.out
+				.println("---------------------------------------------------------");
+
+		return orderByStrength(choiceWeights).get(0);
 	}
-	public String deriveBestChoice(RavensFigure problem) {
-		
-		List<String> sorted = getOrderByStrength(choiceWeights);
-		return sorted.get(0);
+
+	public void generateProblemRelationships() {
+
 	}
-	
+
+	public Releationship getReleationship(String frameA, String frameB) {
+
+		if (frameA.length() == 1 && frameB.length() == 1) {
+			return relationships.get(frameA + frameB);
+		}
+		return null;
+
+	}
+
 	public void buildStrengthMap() {
-	
 		Iterator<Entry<String, RavensFigure>> it = choices.entrySet()
 				.iterator();
 		while (it.hasNext()) {
-			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it.next();
+			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it
+					.next();
 			choiceWeights.put((RavensFigure) pairs.getValue(), 0);
-		}	
+		}
 	}
-	
-	public  void incrementStrength(String choice) {
+
+	public Releationship buildReleationship(RavensFigure objA, RavensFigure objB) {
+		Releationship releationship = getReleationship(objA.getName(), objB.getName());
+
+		for (RavensObject A: objA.getObjects()) {
+			//ZYX (shape)
+			for (RavensObject B: objA.getObjects()) {
+				//ZYX (shape)
+				//compare attributes 
+				for (RavensAttribute aAttribute : A.getAttributes()) {
+					for (RavensAttribute bAttribute : B.getAttributes()) {
+						if (aAttribute.equals(bAttribute)) {
+							if (aAttribute.getName().equals(bAttribute.getName())) {
+								Map<String, RavensAttribute> map = new HashMap<String, RavensAttribute>();
+								map.put(A.getName(), aAttribute);
+								releationship.addSimilarity(map);								
+								
+							}
+						}
+						else {
+							if (aAttribute.getName().equals(bAttribute.getName())) {
+								Map<String, RavensAttribute> map = new HashMap<String, RavensAttribute>();
+								map.put(A.getName(), bAttribute);
+								releationship.differencesList.add(map);								
+							}
+						}
+					}
+				}
+				
+			}
+		}
 		
-		choiceWeights.put(choices.get(choice), choiceWeights.get(choices.get(choice)) + 1);
+		//sim 
+		//Z
+		//	Shape:Circle
+		//Y
+		//X
+		
+		
+		return releationship;
+		
 	}
-		
+	public void compareReleationships() {
+
+		Releationship releationship = getReleationship("A", "B");
+		RavensFigure figure;
+
+		for (int i = 1; i <= choices.size(); i++) {
+			switch (i) {
+			case 1:
+				figure = choices.get("1");
+				break;
+			case 2:
+				figure = choices.get("2");
+				break;
+			case 3:
+				figure = choices.get("3");
+				break;
+			case 4:
+				figure = choices.get("4");
+				break;
+			case 5:
+				figure = choices.get("5");
+				break;
+			case 6:
+				figure = choices.get("6");
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	public void incrementStrength(String choice) {
+		choiceWeights.put(choices.get(choice),
+				choiceWeights.get(choices.get(choice)) + 1);
+	}
+
 	public void seperateProblemsAndChoices(HashMap<String, RavensFigure> figures) {
 		Iterator<Entry<String, RavensFigure>> it = figures.entrySet()
 				.iterator();
@@ -120,10 +206,11 @@ public class Agent {
 			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it
 					.next();
 			if (!pairs.getKey().toString().matches("-?\\d+(\\.\\d+)?")) {
-				problems.put(pairs.getKey().toString(),(RavensFigure) pairs.getValue());
-			}
-			else {
-				choices.put(pairs.getKey().toString(),(RavensFigure) pairs.getValue());
+				problems.put(pairs.getKey().toString(),
+						(RavensFigure) pairs.getValue());
+			} else {
+				choices.put(pairs.getKey().toString(),
+						(RavensFigure) pairs.getValue());
 			}
 		}
 	}
@@ -141,19 +228,20 @@ public class Agent {
 		}
 		return 0;
 	}
-	
-	public int compareAttributes(ArrayList<RavensAttribute> a,ArrayList<RavensAttribute> b) {
-	
+
+	public int compareAttributes(ArrayList<RavensAttribute> a,
+			ArrayList<RavensAttribute> b) {
+
 		for (RavensAttribute obj : a) {
 			for (RavensAttribute object : b) {
 				if (object.getName().equals(obj.getName())) {
 					System.out.println(obj.getName() + ":" + obj.getValue());
-					System.out.println(object.getName() + ":" + object.getValue());
+					System.out.println(object.getName() + ":"
+							+ object.getValue());
 				}
 			}
 		}
 		return 0;
-
 	}
 
 	public String getAttributeValue(RavensObject a, String key) {
@@ -165,7 +253,8 @@ public class Agent {
 		return null;
 	}
 
-	public List<String> getOrderByStrength(HashMap<RavensFigure, Integer> choices) {
+	public List<String> orderByStrength(
+			HashMap<RavensFigure, Integer> choices) {
 		List<String> choiceList = new ArrayList<String>();
 		List<Entry<RavensFigure, Integer>> list = new ArrayList<Entry<RavensFigure, Integer>>(
 				choices.entrySet());
@@ -180,6 +269,60 @@ public class Agent {
 			choiceList.add(entry.getKey().getName());
 		}
 		return choiceList;
+	}
+
+	public static int randInt(int min, int max) {
+
+		Random rand = new Random();
+		int randomNum = rand.nextInt((max - min) + 1) + min;
+		return randomNum;
+
+	}
+
+	public void genertateMatrixMap(String problemType) {
+
+		switch (problemType) {
+		case "2x1":
+			relationships.put("AB", new Releationship());
+			break;
+		case "3x1":
+			relationships.put("ABC", new Releationship());
+			break;
+		case "3x2":
+			relationships.put("ABC", new Releationship());
+			relationships.put("DEF", new Releationship());
+			relationships.put("AD", new Releationship());
+			relationships.put("BE", new Releationship());
+			relationships.put("CF", new Releationship());
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	public boolean isRotation() {
+		return false;
+	}
+
+	public boolean isDeletion() {
+		return false;
+	}
+
+	public boolean isReflection() {
+		return false;
+	}
+
+	public boolean isUnchanged() {
+		return false;
+	}
+
+	public boolean isScaled() {
+		return false;
+	}
+
+	public boolean isShapeChanged() {
+		return false;
 	}
 
 	public int getSides(String shape) {
@@ -208,35 +351,4 @@ public class Agent {
 
 	}
 
-	public static int randInt(int min, int max) {
-
-		Random rand = new Random();
-		int randomNum = rand.nextInt((max - min) + 1) + min;
-		return randomNum;
-
-	}
-
-	public boolean isRotation() {
-		return false;
-	}
-
-	public boolean isDeletion() {
-		return false;
-	}
-
-	public boolean isReflection() {
-		return false;
-	}
-
-	public boolean isUnchanged() {
-		return false;
-	}
-
-	public boolean isScaled() {
-		return false;
-	}
-
-	public boolean isShapeChanged() {
-		return false;
-	}
 }
