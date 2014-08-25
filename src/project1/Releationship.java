@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 
 public class Releationship {
 	//its all about the meta......... 
-	public ArrayList<Map<String, RavensAttribute>> similaritesList;
+	public ArrayList<Map<String, RavensAttribute>> similaritiesList;
 	public ArrayList<Map<String, RavensAttribute>> differencesList;
 	public ArrayList<RavensObject> shapesDeleted;
 	public ArrayList<RavensObject> shapesAdded;
@@ -19,11 +19,8 @@ public class Releationship {
 	
 	public Releationship(RavensFigure objA, RavensFigure objB) {
 
-		similaritesList = new ArrayList<Map<String, RavensAttribute>>();
-		differencesList = new ArrayList<Map<String, RavensAttribute>>();
-		shapesDeleted = new ArrayList<RavensObject>();
-		shapesAdded = new ArrayList<RavensObject>();
-		
+		this.similaritiesList = new ArrayList<Map<String, RavensAttribute>>();
+		this.differencesList = new ArrayList<Map<String, RavensAttribute>>();
 		this.objA = objA;
 		this.objB = objB;
 		
@@ -33,59 +30,75 @@ public class Releationship {
 	}
 
 	public void addSimilarity(Map<String, RavensAttribute> map) {
-		similaritesList.add(map);
+		similaritiesList.add(map);
 	}
 
 	public void addDifference(Map<String, RavensAttribute>  map) {
-		similaritesList.add(map);
+		similaritiesList.add(map);
 	}
+
 	public Releationship buildReleationship() {
-		//Releationship releationship = getReleationship(objA.getName(), objB.getName());
-		
-		for (RavensObject A: objA.getObjects()) {
-			for (RavensObject B: objB.getObjects()) {
+
+		for (RavensObject A : objA.getObjects()) {
+			for (RavensObject B : objB.getObjects()) {
 				if (A.getName().equals(B.getName())) {
 					for (RavensAttribute aAttribute : A.getAttributes()) {
 						for (RavensAttribute bAttribute : B.getAttributes()) {
 							Map<String, RavensAttribute> map = new HashMap<String, RavensAttribute>();
-							if (aAttribute.getName().equals(bAttribute.getName()) &&
-									aAttribute.getValue().equals(bAttribute.getValue())) {
-									map.put(A.getName(), aAttribute);
-									this.addSimilarity(map);								
-							}
-							else {
-								if (aAttribute.getName().equals(bAttribute.getName())) {
+							if (aAttribute.getName().equals(
+									bAttribute.getName())
+									&& aAttribute.getValue().equals(
+											bAttribute.getValue())) {
+								map.put(A.getName(), aAttribute);
+								this.addSimilarity(map);
+							} else {
+								if (aAttribute.getName().equals(
+										bAttribute.getName())) {
 									map.put(A.getName(), bAttribute);
-									this.differencesList.add(map);		
+									this.differencesList.add(map);
 								}
 							}
 						}
 					}
 				}
 			}
-		}	
-			
-		//get shapes deleted between x and y
+		}
+		this.shapesDeleted = getShapesDeleted();
+		this.shapesAdded = getShapesAdded();
+
+		return this;
+	}
+
+	public ArrayList<RavensObject> getShapesDeleted() {
+	
+		//gets shapes deleted between x and y
+		ArrayList<RavensObject> list = new ArrayList<RavensObject>();
 		for (RavensObject A: objA.getObjects()) {
-			this.shapesDeleted.add(A);
+			list.add(A);
 			for (RavensObject B: objB.getObjects()) {
 				if (A.getName().equals(B.getName())) {
-					this.shapesDeleted.remove(A);
+					list.remove(A);
 					break;
 				}
 			}	
 		}
+		return list;
+	}
+	
+	public ArrayList<RavensObject> getShapesAdded() {
+	
 		//get shapes added between x and y
+		ArrayList<RavensObject> list = new ArrayList<RavensObject>();
 		for (RavensObject A: objB.getObjects()) {
-			this.shapesAdded.add(A);
+			list.add(A);
 			for (RavensObject B: objA.getObjects()) {
 				if (A.getName().equals(B.getName())) {
-					this.shapesAdded.remove(A);
+					list.remove(A);
 					break;
 				}
 			}	
 		}
-		return this;	
+		return list;
 	}
 
 	public int getSides(RavensFigure obj) {
@@ -105,7 +118,7 @@ public class Releationship {
 		System.out.println("Total Sides fig." + objB.getName() + " " + getSides(objB));
 		System.out.println();
 		System.out.println("Similarities:");
-		for (Map<String, RavensAttribute>  sim : this.similaritesList) {
+		for (Map<String, RavensAttribute>  sim : this.similaritiesList) {
 			Iterator<Entry<String, RavensAttribute>> it = sim.entrySet()
 					.iterator();
 			while (it.hasNext()) {
