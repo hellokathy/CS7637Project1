@@ -35,19 +35,14 @@ public class Agent {
 	 */
 	// used to test an assumptions strength
 	// i.e. if a transformation has a strong similarity weight than the
-	// AI can make tolerance levels to arrive at the best answer
+	// AI can determine tolerance levels to arrive at the best answer
 	public HashMap<RavensFigure, Integer> choiceWeights;
 	public HashMap<String, RavensFigure> choices;
 	public HashMap<String, RavensFigure> problems;
 	public HashMap<String, Releationship> relationships;
 
 	public Agent() {
-		// Weights = new HashMap<String, Integer>();
-		// Weights.put("Unchanged", 5);
-		// Weights.put("Reflected", 4);
-		// Weights.put("Scaled", 2);
-		// Weights.put("Deleted", 1);
-		// Weights.put("ShapeChanged", 0);
+
 	}
 
 	/**
@@ -90,14 +85,7 @@ public class Agent {
 		buildStrengthMap();
 		genertateMatrixMap(problem.getProblemType());
 
-	
-		relationships.put("AB", buildReleationship(problems.get("A"), problems.get("B")));
-
-	
-		getTranformStrength(problems.get("A").getObjects(), problems.get("B")
-				.getObjects());
-		System.out
-				.println("---------------------------------------------------------");
+		System.out.println("---------------------------------------------------------");
 
 		return orderByStrength(choiceWeights).get(0);
 	}
@@ -125,114 +113,6 @@ public class Agent {
 		}
 	}
 
-	public Releationship buildReleationship(RavensFigure objA, RavensFigure objB) {
-		Releationship releationship = getReleationship(objA.getName(), objB.getName());
-		
-		for (RavensObject A: objA.getObjects()) {
-			for (RavensObject B: objB.getObjects()) {
-				if (A.getName().equals(B.getName())) {
-					for (RavensAttribute aAttribute : A.getAttributes()) {
-						for (RavensAttribute bAttribute : B.getAttributes()) {
-							Map<String, RavensAttribute> map = new HashMap<String, RavensAttribute>();
-							if (aAttribute.getName().equals(bAttribute.getName()) &&
-									aAttribute.getValue().equals(bAttribute.getValue())) {
-									map.put(A.getName(), aAttribute);
-									releationship.addSimilarity(map);								
-							}
-							else {
-								if (aAttribute.getName().equals(bAttribute.getName())) {
-									map.put(A.getName(), bAttribute);
-									releationship.differencesList.add(map);		
-								}
-							}
-						}
-					}
-				}
-			}
-		}	
-		
-		//counts side in fig
-		for (RavensObject A: objA.getObjects()) {
-			for (RavensAttribute aAttribute : A.getAttributes()) {
-				if (aAttribute.getName().equals("shape")) {
-					releationship.totalSidesA += getSides(aAttribute.getValue()) ;
-				}	
-			}	
-		}
-		
-		for (RavensObject B: objB.getObjects()) {
-			for (RavensAttribute bAttribute : B.getAttributes()) {
-				if (bAttribute.getName().equals("shape")) {
-					releationship.totalSidesB += getSides(bAttribute.getValue()) ;
-				}			
-			}	
-		}
-		
-		//get shapes deleted between x and y
-		for (RavensObject A: objA.getObjects()) {
-			releationship.shapesDeleted.add(A);
-			for (RavensObject B: objB.getObjects()) {
-				if (A.getName().equals(B.getName())) {
-					releationship.shapesDeleted.remove(A);
-					break;
-				}
-			}	
-		}
-		//get shapes added between x and y
-		for (RavensObject A: objB.getObjects()) {
-			releationship.shapesAdded.add(A);
-			for (RavensObject B: objA.getObjects()) {
-				if (A.getName().equals(B.getName())) {
-					releationship.shapesAdded.remove(A);
-					break;
-				}
-			}	
-		}
-		
-		logRelationship(releationship);
-		return releationship;	
-	}
-
-	private void logRelationship(Releationship releationship) {
-		System.out.println("Total Sides fig. A : " + releationship.totalSidesA);
-		System.out.println("Total Sides fig. B : " + releationship.totalSidesB);
-		System.out.println();
-		System.out.println("Similarities:");
-		for (Map<String, RavensAttribute>  sim : releationship.similaritesList) {
-			Iterator<Entry<String, RavensAttribute>> it = sim.entrySet()
-					.iterator();
-			while (it.hasNext()) {
-				Map.Entry<String, RavensAttribute> pairs = (Map.Entry<String, RavensAttribute>) it
-						.next();
-				System.out.println((pairs.getKey() + " " + pairs.getValue().getName() + " " + pairs.getValue().getValue()));
-			}
-			
-		}
-	
-		System.out.println();
-		System.out.println("Differences:");
-		for (Map<String, RavensAttribute>  diff : releationship.differencesList) {
-			Iterator<Entry<String, RavensAttribute>> it = diff.entrySet()
-					.iterator();
-			while (it.hasNext()) {
-				Map.Entry<String, RavensAttribute> pairs = (Map.Entry<String, RavensAttribute>) it
-						.next();
-				System.out.println((pairs.getKey() + " " + pairs.getValue().getName() + " " + pairs.getValue().getValue()));
-			}
-		}
-		System.out.println();
-		System.out.println("ShapesAdded:");
-		for (RavensObject obj : releationship.shapesAdded) {
-			System.out.println(obj.getName());
-		}
-		System.out.println();
-		System.out.println("ShapesDeleted:");
-		for (RavensObject obj : releationship.shapesDeleted) {
-			System.out.println(obj.getName());
-		}
-		System.out.println();
-	
-	}
 	public void compareReleationships() {
 
 		Releationship releationship = getReleationship("A", "B");
@@ -242,6 +122,7 @@ public class Agent {
 			switch (i) {
 			case 1:
 				figure = choices.get("1");
+				relationships.put("C1", new Releationship(problems.get("C"), problems.get("1")));
 				break;
 			case 2:
 				figure = choices.get("2");
@@ -335,29 +216,25 @@ public class Agent {
 		return choiceList;
 	}
 
-	public static int randInt(int min, int max) {
-
-		Random rand = new Random();
-		int randomNum = rand.nextInt((max - min) + 1) + min;
-		return randomNum;
-
-	}
-
 	public void genertateMatrixMap(String problemType) {
 
 		switch (problemType) {
 		case "2x1":
-			relationships.put("AB", new Releationship());
+			relationships.put("AB", new Releationship(problems.get("A"), problems.get("B")));
+			for (int i = 1; i <= 6; i++) {
+				relationships.put("C" + String.valueOf(i) , new Releationship(problems.get("C"), choices.get(String.valueOf(i))));
+			}
+
 			break;
 		case "3x1":
-			relationships.put("ABC", new Releationship());
+			relationships.put("ABC", null);
 			break;
 		case "3x2":
-			relationships.put("ABC", new Releationship());
-			relationships.put("DEF", new Releationship());
-			relationships.put("AD", new Releationship());
-			relationships.put("BE", new Releationship());
-			relationships.put("CF", new Releationship());
+			relationships.put("ABC", null);
+			relationships.put("DEF", null);
+			relationships.put("AD", null);
+			relationships.put("BE", null);
+			relationships.put("CF", null);
 			break;
 
 		default:
@@ -365,60 +242,28 @@ public class Agent {
 		}
 	}
 
-	public boolean isRotation() {
-		return false;
-	}
-
-	public boolean isDeletion() {
-		return false;
-	}
-
-	public boolean isReflection() {
-		return false;
-	}
-
-	public boolean isUnchanged() {
-		return false;
-	}
-
-	public boolean isScaled() {
-		return false;
-	}
-
-	public boolean isShapeChanged() {
-		return false;
-	}
-
-	public int getSides(String shape) {
-
-		switch (shape) {
-		case "triangle":
-			return 3;
-		case "square":
-			return 4;
-		case "diamond":
-			return 4;
-		case "pentagon":
-			return 5;
-		case "half-arrow":
-			return 5;
-		case "hexagon":
-			return 6;
-		case "heptagon":
-			return 7;
-		case "arrow":
-			return 7;
-		case "octagon":
-			return 8;
-		case "nonagon":
-			return 9;
-		case "decagon":
-			return 10;
-		default:
-			break;
-		}
-		return 0;
-
-	}
+//	public boolean isRotation() {
+//		return false;
+//	}
+//
+//	public boolean isDeletion() {
+//		return false;
+//	}
+//
+//	public boolean isReflection() {
+//		return false;
+//	}
+//
+//	public boolean isUnchanged() {
+//		return false;
+//	}
+//
+//	public boolean isScaled() {
+//		return false;
+//	}
+//
+//	public boolean isShapeChanged() {
+//		return false;
+//	}
 
 }
