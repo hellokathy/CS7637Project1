@@ -63,8 +63,7 @@ public class Project1 {
                                                                         // Your agent should return its answer at the conclusion of the execution of Solve.
                                                                         // Note that if your agent makes use of RavensProblem.check to check its answer, the answer passed to check() will be used.
                                                                         // Your agent cannot change its answer once it has checked its answer.
-                    
-                        results.println(problem.getName() + ": " + problem.getGivenAnswer() + " " + problem.getCorrect());
+                        results.println(problem.getName() + ": " + problem.getGivenAnswer() + " " + problem.getCorrect());               
                     } catch(Exception ex) {
                         System.out.println("Error encountered in " + set.getName() + " problem " + problem.getName());
                         results.println(problem.getName() + ": Error; no answer given.");

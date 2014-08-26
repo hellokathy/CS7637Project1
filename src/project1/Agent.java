@@ -7,10 +7,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Map.Entry;
 
-import javax.security.sasl.RealmCallback;
 
 /**
  * Your Agent for solving Raven's Progressive Matrices. You MUST modify this
@@ -36,7 +34,7 @@ public class Agent {
 	// used to test an assumptions strength
 	// i.e. if a transformation has a strong similarity weight than the
 	// AI can determine tolerance levels to arrive at the best answer
-	public HashMap<RavensFigure, Integer> choiceWeights;
+	public HashMap<RavensFigure, Double> choiceWeights;
 	public HashMap<String, RavensFigure> choices;
 	public HashMap<String, RavensFigure> problems;
 	public HashMap<String, Releationship> relationships;
@@ -75,66 +73,68 @@ public class Agent {
 
 		// Separate problems from possible choices
 
-		problems = new HashMap<String, RavensFigure>(); // A,B,C
-		choices = new HashMap<String, RavensFigure>(); // 1,2,3,4,5,6
-		choiceWeights = new HashMap<RavensFigure, Integer>(); // 1(5pts),2(3pts)
-		relationships = new HashMap<String, Releationship>(); // AB,C1,C2.....
+		problems = getProblems(problem); // A,B,C
+		choices = getChoices(problem); // 1,2,3,4,5,6
+		choiceWeights = new HashMap<RavensFigure, Double>(); // 1(5pts),2(3pts)
+		relationships = genertateMatrixMap(problem); // AB,C1,C2.....
 
 		System.out.println(problem.getName());
-		splitProblemsAndChoices(problem.getFigures());
-		buildStrengthMap();
-		genertateMatrixMap(problem.getProblemType());
-		System.out
-				.println("---------------------------------------------------------");
+		System.out.println("------------------------------------");
 
+		for (int i = 1; i <= 6; i++) {
+			choiceWeights.put(choices.get(String.valueOf(i)),Releationship.getRelationshipStrength(relationships.get("AB"), relationships.get("C"+i)));
+		}
+		
 		return orderByStrength(choiceWeights).get(0);
 	}
 
+	private HashMap<String, RavensFigure> eliminateBadFrames(
+			HashMap<String, RavensFigure> choices) {
 
-
-	public void splitProblemsAndChoices(HashMap<String, RavensFigure> figures) {
-		Iterator<Entry<String, RavensFigure>> it = figures.entrySet()
-				.iterator();
-		while (it.hasNext()) {
-			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it
-					.next();
-			if (!pairs.getKey().toString().matches("-?\\d+(\\.\\d+)?")) {
-				problems.put(pairs.getKey().toString(),
-						(RavensFigure) pairs.getValue());
-			} else {
-				choices.put(pairs.getKey().toString(),
-						(RavensFigure) pairs.getValue());
-			}
-		}
-	}
-
-//	public int getTranformStrength(ArrayList<RavensObject> a,
-//			ArrayList<RavensObject> b) {
-//		for (RavensObject obj : a) {
-//			for (RavensObject object : b) {
-//				if (object.getName().equals(obj.getName())) {
-//				}
-//			}
-//		}
-//		return 0;
-//	}
-
-	public void buildStrengthMap() {
+		HashMap<String, RavensFigure> realChoices = new HashMap<String, RavensFigure>();
 		Iterator<Entry<String, RavensFigure>> it = choices.entrySet()
 				.iterator();
 		while (it.hasNext()) {
 			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it
 					.next();
-			choiceWeights.put((RavensFigure) pairs.getValue(), 0);
+			realChoices.put(pairs.getKey(), (RavensFigure) pairs.getValue());
 		}
+		return realChoices;
 	}
 
+	public HashMap<String, RavensFigure> getProblems(RavensProblem problem) {
 
-	public void incrementStrength(String choice) {
-		choiceWeights.put(choices.get(choice),
-				choiceWeights.get(choices.get(choice)) + 1);
+		HashMap<String, RavensFigure> problems = new HashMap<String, RavensFigure>();
+		Iterator<Entry<String, RavensFigure>> it = problem.getFigures()
+				.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it
+					.next();
+			if (!pairs.getKey().toString().matches("-?\\d+(\\.\\d+)?")) {
+				// eliminate bad frames here instead of calling eliminateBadFrames()
+				problems.put(pairs.getKey().toString(),
+						(RavensFigure) pairs.getValue());
+			}
+		}
+		return problems;
 	}
-	
+
+	public HashMap<String, RavensFigure> getChoices(RavensProblem problem) {
+
+		HashMap<String, RavensFigure> choices = new HashMap<String, RavensFigure>();
+		Iterator<Entry<String, RavensFigure>> it = problem.getFigures()
+				.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it
+					.next();
+			if (pairs.getKey().toString().matches("-?\\d+(\\.\\d+)?")) {
+				choices.put(pairs.getKey().toString(),
+						(RavensFigure) pairs.getValue());
+			}
+		}
+		return eliminateBadFrames(choices);
+	}
+
 	public int compareAttributes(ArrayList<RavensAttribute> a,
 			ArrayList<RavensAttribute> b) {
 
@@ -147,16 +147,8 @@ public class Agent {
 		return 0;
 	}
 
-	public Releationship getReleationship(String frameA, String frameB) {
-
-		if (frameA.length() == 1 && frameB.length() == 1) {
-			return relationships.get(frameA + frameB);
-		}
-		return null;
-
-	}
-
 	public String getAttributeValue(RavensObject a, String key) {
+
 		for (RavensAttribute obj : a.getAttributes()) {
 			if (obj.getName().equals(key.toLowerCase())) {
 				return obj.getValue();
@@ -165,34 +157,36 @@ public class Agent {
 		return null;
 	}
 
-	public List<String> orderByStrength(HashMap<RavensFigure, Integer> choices) {
+	public List<String> orderByStrength(HashMap<RavensFigure, Double> choices) {
+
 		List<String> choiceList = new ArrayList<String>();
-		List<Entry<RavensFigure, Integer>> list = new ArrayList<Entry<RavensFigure, Integer>>(
+		List<Entry<RavensFigure, Double>> list = new ArrayList<Entry<RavensFigure, Double>>(
 				choices.entrySet());
 		Collections.sort(list,
-				new Comparator<Map.Entry<RavensFigure, Integer>>() {
-					public int compare(Map.Entry<RavensFigure, Integer> o1,
-							Map.Entry<RavensFigure, Integer> o2) {
+				new Comparator<Map.Entry<RavensFigure, Double>>() {
+					public int compare(Map.Entry<RavensFigure, Double> o1,
+							Map.Entry<RavensFigure, Double> o2) {
 						return (o2.getValue()).compareTo(o1.getValue());
 					}
 				});
-		for (Map.Entry<RavensFigure, Integer> entry : list) {
+		for (Map.Entry<RavensFigure, Double> entry : list) {
 			choiceList.add(entry.getKey().getName());
 		}
 		return choiceList;
 	}
 
-	public void genertateMatrixMap(String problemType) {
-
-		switch (problemType) {
+	public HashMap<String, Releationship> genertateMatrixMap(RavensProblem problem) {
+		HashMap<String, Releationship> relationships = new HashMap<String, Releationship>();
+		
+		switch (problem.getProblemType()) {
 		case "2x1":
-			relationships.put("AB", new Releationship(problems.get("A"),
-					problems.get("B")));
-			for (int i = 1; i <= 6; i++) {
-				relationships.put("C" + String.valueOf(i), new Releationship(
-						problems.get("C"), choices.get(String.valueOf(i))));
+			relationships.put("AB", new Releationship(problems.get("A"),problems.get("B")));
+			Iterator<Entry<String, RavensFigure>> it = choices.entrySet().iterator();
+			while (it.hasNext()) {
+				Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it.next();
+				relationships.put("C" + pairs.getValue().getName(), new Releationship(
+						problems.get("C"), pairs.getValue()));
 			}
-
 			break;
 		case "3x1":
 			relationships.put("ABC", null);
@@ -208,6 +202,7 @@ public class Agent {
 		default:
 			break;
 		}
+		return relationships;
 	}
 
 	public void compareReleationships() {
