@@ -72,14 +72,14 @@ public class Agent {
 	public String Solve(RavensProblem problem) {
 
 		// Separate problems from possible choices
-
+		System.out.println(problem.getName());
+		System.out.println("------------------------------------");
 		problems = getProblems(problem); // A,B,C
 		choices = getChoices(problem); // 1,2,3,4,5,6
 		choiceWeights = new HashMap<RavensFigure, Double>(); // 1(5pts),2(3pts)
 		relationships = genertateMatrixMap(problem); // AB,C1,C2.....
 
-		System.out.println(problem.getName());
-		System.out.println("------------------------------------");
+
 
 		for (int i = 1; i <= 6; i++) {
 			choiceWeights.put(choices.get(String.valueOf(i)),Releationship.getRelationshipStrength(relationships.get("AB"), relationships.get("C"+i)));

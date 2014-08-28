@@ -29,14 +29,6 @@ public class Releationship {
 		
 	}
 
-	public void addSimilarity(Map<String, RavensAttribute> map) {
-		similaritiesList.add(map);
-	}
-
-	public void addDifference(Map<String, RavensAttribute>  map) {
-		similaritiesList.add(map);
-	}
-
 	public Releationship buildReleationship() {
 
 		for (RavensObject A : objA.getObjects()) {
@@ -50,12 +42,12 @@ public class Releationship {
 									&& aAttribute.getValue().equals(
 											bAttribute.getValue())) {
 								map.put(A.getName(), aAttribute);
-								this.addSimilarity(map);
+								similaritiesList.add(map);
 							} else {
 								if (aAttribute.getName().equals(
 										bAttribute.getName())) {
 									map.put(A.getName(), bAttribute);
-									this.differencesList.add(map);
+									differencesList.add(map);
 								}
 							}
 						}
@@ -160,53 +152,86 @@ public class Releationship {
 			Releationship bReleationship) {
 
 		double totalAttributes = 0;
-		double strength = 0;
+		double matchStrength = 0;
 
 		totalAttributes += aReleationship.similaritiesList.size();
 		totalAttributes += aReleationship.differencesList.size();
+		
 		if (aReleationship.totalSidesA == aReleationship.totalSidesB) {
 			totalAttributes++;
 		}
+	
 		if (aReleationship.shapesAdded.size() == 0) {
 			totalAttributes++;
 		} else {
 			totalAttributes += aReleationship.shapesAdded.size();
 		}
+		
 		if (aReleationship.shapesDeleted.size() == 0) {
 			totalAttributes++;
 		} else {
 			totalAttributes += aReleationship.shapesDeleted.size();
 		}
 
+		matchStrength += compareSides(aReleationship, bReleationship, matchStrength);
+		matchStrength += compareSimilarities(aReleationship, bReleationship, matchStrength);
+		matchStrength += compareDifferences(aReleationship, bReleationship, matchStrength);
+		matchStrength += compareShapesAdded(aReleationship, bReleationship, matchStrength);
+		matchStrength += compareShapesDeleted(aReleationship, bReleationship,matchStrength);
+
+		// return strength of comparison
+		return (matchStrength / totalAttributes) * 100;
+
+	}
+
+	public static double compareSides(Releationship aReleationship,
+			Releationship bReleationship, double strength) {
 		//sides 
 		if (aReleationship.totalSidesA == aReleationship.totalSidesB) {
 			if (bReleationship.totalSidesA == aReleationship.totalSidesB) {
 				strength++;
 			}
 		}
-		// similarities
-		if (aReleationship.similaritiesList.size() == bReleationship.similaritiesList.size()) {
-			strength++;
-		}
-		// differences
-		if (aReleationship.differencesList.size() == bReleationship.differencesList
-				.size()) {
-			strength++;
-		}
-		// shapes added
-		if (aReleationship.shapesAdded.size() == bReleationship.shapesAdded
-				.size()) {
-			strength++;
-		}
+		return strength;
+	}
+
+	public static double compareShapesDeleted(Releationship aReleationship,
+			Releationship bReleationship, double strength) {
 		// shapes deleted
 		if (aReleationship.shapesDeleted.size() == bReleationship.shapesDeleted
 				.size()) {
 			strength++;
 		}
+		return strength;
+	}
 
-		// return strength of comparison
-		return (strength / totalAttributes) * 100;
+	public static double compareShapesAdded(Releationship aReleationship,
+			Releationship bReleationship, double strength) {
+		// shapes added
+		if (aReleationship.shapesAdded.size() == bReleationship.shapesAdded
+				.size()) {
+			strength++;
+		}
+		return strength;
+	}
 
+	public static double compareDifferences(Releationship aReleationship,
+			Releationship bReleationship, double strength) {
+		// differences
+		if (aReleationship.differencesList.size() == bReleationship.differencesList
+				.size()) {
+			strength++;
+		}
+		return strength;
+	}
+
+	public static double compareSimilarities(Releationship aReleationship,
+			Releationship bReleationship, double strength) {
+		// similarities
+		if (aReleationship.similaritiesList.size() == bReleationship.similaritiesList.size()) {
+			strength++;
+		}
+		return strength;
 	}
 	public int getSides(String shape) {
 
