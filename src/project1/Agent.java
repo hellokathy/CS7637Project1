@@ -79,30 +79,28 @@ public class Agent {
 		choiceWeights = new HashMap<RavensFigure, Double>(); // 1(5pts),2(3pts)
 		relationships = genertateMatrixMap(problem); // AB,C1,C2.....
 
-		if (problem.getName().equals("2x1 Basic Problem 20")) {
-			System.out.println("------------------------------------");
+		for (Entry<String, RavensFigure> it : choices.entrySet()) {
+			choiceWeights.put(
+					choices.get(String.valueOf(it.getKey())),
+					Releationship.getRelationshipStrength(
+							relationships.get("AB"),
+							relationships.get("C" + it.getKey())));
 		}
-		Iterator<Entry<String, RavensFigure>> it = choices.entrySet().iterator();
-			while (it.hasNext()) {
-				Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it.next();
-				choiceWeights.put(choices.get(String.valueOf(pairs.getKey())),Releationship.getRelationshipStrength(relationships.get("AB"), relationships.get("C"+ pairs.getKey())));
-			}
+
 		return getBestChoice(choiceWeights);
 	}
 
 	private HashMap<String, RavensFigure> eliminateBadFrames(
 			HashMap<String, RavensFigure> choices) {
-
 		
 		HashMap<String, RavensFigure> realChoices = new HashMap<String, RavensFigure>();
-		Iterator<Entry<String, RavensFigure>> it = choices.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it.next();
-			RavensFigure b = pairs.getValue();
-			if (!(figuresEqual(problems.get("A"), b) || figuresEqual(problems.get("C"), b))) {
-				realChoices.put(pairs.getKey(), (RavensFigure) pairs.getValue());
-			}			
-		}	
+	
+		for (Entry<String, RavensFigure> it : choices.entrySet()) {
+			if (!(figuresEqual(problems.get("A"), it.getValue())  || figuresEqual(problems.get("B"), it.getValue()))) {
+				realChoices.put(it.getKey(), it.getValue());
+			}	
+		}
+		
 		return realChoices;
 	}
 
@@ -110,56 +108,27 @@ public class Agent {
 	public HashMap<String, RavensFigure> getProblems(RavensProblem problem) {
 
 		HashMap<String, RavensFigure> problems = new HashMap<String, RavensFigure>();
-		Iterator<Entry<String, RavensFigure>> it = problem.getFigures()
-				.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it
-					.next();
-			if (!pairs.getKey().toString().matches("-?\\d+(\\.\\d+)?")) {
-				// eliminate bad frames here instead of calling eliminateBadFrames()
-				problems.put(pairs.getKey().toString(),
-						(RavensFigure) pairs.getValue());
+
+		for (Entry<String, RavensFigure> it : problem.getFigures().entrySet()) {
+			if (!it.getKey().toString().matches("-?\\d+(\\.\\d+)?")) {
+				problems.put(it.getKey().toString(), it.getValue());
 			}
 		}
+
 		return problems;
 	}
 
 	public HashMap<String, RavensFigure> getChoices(RavensProblem problem) {
 
 		HashMap<String, RavensFigure> choices = new HashMap<String, RavensFigure>();
-		Iterator<Entry<String, RavensFigure>> it = problem.getFigures()
-				.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it
-					.next();
-			if (pairs.getKey().toString().matches("-?\\d+(\\.\\d+)?")) {
-				choices.put(pairs.getKey().toString(),
-						(RavensFigure) pairs.getValue());
+		
+		for (Entry<String, RavensFigure> it : problem.getFigures().entrySet()) {
+			if (it.getKey().toString().matches("-?\\d+(\\.\\d+)?")) {
+				choices.put(it.getKey().toString(), it.getValue());
 			}
 		}
+
 		return eliminateBadFrames(choices);
-	}
-
-	public int compareAttributes(ArrayList<RavensAttribute> a,
-			ArrayList<RavensAttribute> b) {
-
-		for (RavensAttribute obj : a) {
-			for (RavensAttribute object : b) {
-				if (object.getName().equals(obj.getName())) {
-				}
-			}
-		}
-		return 0;
-	}
-
-	public String getAttributeValue(RavensObject a, String key) {
-
-		for (RavensAttribute obj : a.getAttributes()) {
-			if (obj.getName().equals(key.toLowerCase())) {
-				return obj.getValue();
-			}
-		}
-		return null;
 	}
 
 	public String getBestChoice(HashMap<RavensFigure, Double> choices) {
@@ -200,28 +169,23 @@ public class Agent {
 		return aString.equals(bString);
 		
 	}
+	
 	public HashMap<String, Releationship> genertateMatrixMap(RavensProblem problem) {
 		HashMap<String, Releationship> relationships = new HashMap<String, Releationship>();
 		
 		switch (problem.getProblemType()) {
 		case "2x1":
 			relationships.put("AB", new Releationship(problems.get("A"),problems.get("B")));
-			Iterator<Entry<String, RavensFigure>> it = choices.entrySet().iterator();
-			while (it.hasNext()) {
-				Map.Entry<String, RavensFigure> pairs = (Map.Entry<String, RavensFigure>) it.next();
-				relationships.put("C" + pairs.getValue().getName(), new Releationship(
-						problems.get("C"), pairs.getValue()));
+			for (Entry<String, RavensFigure> it : choices.entrySet()) {
+				relationships.put("C" + it.getValue().getName(), new Releationship(
+						problems.get("C"), it.getValue()));
 			}
 			break;
 		case "3x1":
-			relationships.put("ABC", null);
+
 			break;
 		case "3x2":
-			relationships.put("ABC", null);
-			relationships.put("DEF", null);
-			relationships.put("AD", null);
-			relationships.put("BE", null);
-			relationships.put("CF", null);
+
 			break;
 
 		default:
@@ -229,59 +193,4 @@ public class Agent {
 		}
 		return relationships;
 	}
-
-	public void compareReleationships() {
-
-		RavensFigure figure;
-
-		for (int i = 1; i <= choices.size(); i++) {
-			switch (i) {
-			case 1:
-				figure = choices.get("1");
-				break;
-			case 2:
-				figure = choices.get("2");
-				break;
-			case 3:
-				figure = choices.get("3");
-				break;
-			case 4:
-				figure = choices.get("4");
-				break;
-			case 5:
-				figure = choices.get("5");
-				break;
-			case 6:
-				figure = choices.get("6");
-				break;
-			default:
-				break;
-			}
-		}
-	}
-
-	// public boolean isRotation() {
-	// return false;
-	// }
-	//
-	// public boolean isDeletion() {
-	// return false;
-	// }
-	//
-	// public boolean isReflection() {
-	// return false;
-	// }
-	//
-	// public boolean isUnchanged() {
-	// return false;
-	// }
-	//
-	// public boolean isScaled() {
-	// return false;
-	// }
-	//
-	// public boolean isShapeChanged() {
-	// return false;
-	// }
-
 }

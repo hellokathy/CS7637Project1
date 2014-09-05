@@ -10,24 +10,24 @@
 2x1 Basic Problem 08: 2 Incorrect
 2x1 Basic Problem 09: 1 Correct
 2x1 Basic Problem 10: 4 Correct
-2x1 Basic Problem 11: 1 Incorrect
+2x1 Basic Problem 11: 6 Incorrect
 2x1 Basic Problem 12: 6 Correct
-2x1 Basic Problem 13: 3 Incorrect
+2x1 Basic Problem 13: 6 Incorrect
 2x1 Basic Problem 14: 1 Incorrect
-2x1 Basic Problem 15: 1 Incorrect
-2x1 Basic Problem 16: 5 Incorrect
+2x1 Basic Problem 15: 5 Incorrect
+2x1 Basic Problem 16: 3 Correct
 2x1 Basic Problem 17: 1 Correct
 2x1 Basic Problem 18: 3 Incorrect
-2x1 Basic Problem 19: 4 Incorrect
+2x1 Basic Problem 19: 5 Incorrect
 2x1 Basic Problem 20: 5 Correct
 
 2x1 Challenge Problems
 -----------
-2x1 Challenge Problem 01: 2 Incorrect
-2x1 Challenge Problem 02: 6 Incorrect
-2x1 Challenge Problem 03: 3 Incorrect
-2x1 Challenge Problem 04: 4 Incorrect
-2x1 Challenge Problem 05: 4 Correct
+2x1 Challenge Problem 01: 1 Correct
+2x1 Challenge Problem 02: 4 Correct
+2x1 Challenge Problem 03: 5 Incorrect
+2x1 Challenge Problem 04: 6 Correct
+2x1 Challenge Problem 05: 2 Incorrect
 
 2x1 Classmates Problems
 -----------

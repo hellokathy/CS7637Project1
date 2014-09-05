@@ -2,6 +2,7 @@ package project1;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -10,15 +11,12 @@ public class Releationship {
 	// its all about the meta.........
 	public ArrayList<String> similaritiesList;
 	public ArrayList<String> differencesList;
-	public HashMap<String, Double> Weights;
 	public ArrayList<RavensObject> shapesDeleted;
 	public ArrayList<RavensObject> shapesAdded;
 	public RavensFigure objA;
 	public RavensFigure objB;
 	public int totalSidesA;
 	public int totalSidesB;
-	public int totalObjectsA;
-	public int totalObjectsB;
 
 	public Releationship(RavensFigure objA, RavensFigure objB) {
 
@@ -30,27 +28,52 @@ public class Releationship {
 		buildReleationship();
 		logRelationship();
 
-		Weights = new HashMap<String, Double>();
-		Weights.put("Unchanged", 5.00);
-		Weights.put("Reflected", 4.00);
-		Weights.put("Scaled", 2.00);
-		Weights.put("Deleted", 1.00);
-		Weights.put("ShapeChanged", 0.00);
 	}
 
 	public Releationship buildReleationship() {
+
+		buildSimAndDiffLists();
+
+		//removes differences that are in the similarities list
+		ArrayList<String> differences = new ArrayList<String>();
+		differences.addAll(differencesList);
+		for (String A : differences) {
+			if (similaritiesList.contains(A)) {
+				differencesList.remove(A);
+			}
+		}
+
+		differencesList = removeDupes(differencesList);
+		similaritiesList = removeDupes(similaritiesList);
+
+		this.totalSidesA = getSides(objA);
+		this.totalSidesB = getSides(objB);
+		this.shapesDeleted = getShapesDeleted(objA, objB);
+		this.shapesAdded = getShapesAdded(objA, objB);
+
+		return this;
+	}
+
+	public void buildSimAndDiffLists() {
 		
 		for (RavensObject A : objA.getObjects()) {
 			for (RavensObject B : objB.getObjects()) {
 				if (A.getName().equals(B.getName())) {
 					for (RavensAttribute aAttribute : A.getAttributes()) {
 						for (RavensAttribute bAttribute : B.getAttributes()) {
-							if (aAttribute.getName().equals(bAttribute.getName())
-									&& aAttribute.getValue().equals(bAttribute.getValue())) {
-								similaritiesList.add(A.getName() +":"+ aAttribute.getName() + ":" +aAttribute.getValue());
+							if (aAttribute.getName().equals(
+									bAttribute.getName())
+									&& aAttribute.getValue().equals(
+											bAttribute.getValue())) {
+								similaritiesList.add(String.format("%s:%s:%s",
+										A.getName(), aAttribute.getName(),
+										aAttribute.getValue()));
 							} else {
+								String diff = String.format("%s:%s:%s",
+										A.getName(), bAttribute.getName(),
+										bAttribute.getValue());
 								if (aAttribute.getName().equals(bAttribute.getName())) {
-									differencesList.add(A.getName()+":"+ bAttribute.getName() + ":" +bAttribute.getValue());
+									differencesList.add(diff);
 								}
 							}
 						}
@@ -58,24 +81,26 @@ public class Releationship {
 				}
 			}
 		}
-		this.totalObjectsA= objA.getObjects().size();
-		this.totalObjectsB = objB.getObjects().size();	
-		this.totalSidesA = getSides(objA);
-		this.totalSidesB = getSides(objB);
-		this.shapesDeleted = getShapesDeleted();
-		this.shapesAdded = getShapesAdded();
-
-		return this;
 	}
 
+	public ArrayList<String> removeDupes(ArrayList<String> list) {
 
-	public ArrayList<RavensObject> getShapesDeleted() {
+		// add elements to al, including duplicates
+		HashSet<String> hs = new HashSet<String>();
+		hs.addAll(list);
+		list.clear();
+		list.addAll(hs);
+		return list;
+
+	}
+
+	public ArrayList<RavensObject> getShapesDeleted(RavensFigure figA, RavensFigure figB) {
 
 		// gets shapes deleted between x and y
 		ArrayList<RavensObject> list = new ArrayList<RavensObject>();
-		for (RavensObject A : objA.getObjects()) {
+		for (RavensObject A : figA.getObjects()) {
 			list.add(A);
-			for (RavensObject B : objB.getObjects()) {
+			for (RavensObject B : figB.getObjects()) {
 				if (A.getName().equals(B.getName())) {
 					list.remove(A);
 					break;
@@ -85,13 +110,13 @@ public class Releationship {
 		return list;
 	}
 
-	public ArrayList<RavensObject> getShapesAdded() {
+	public ArrayList<RavensObject> getShapesAdded(RavensFigure figA, RavensFigure figB) {
 
 		// get shapes added between x and y
 		ArrayList<RavensObject> list = new ArrayList<RavensObject>();
-		for (RavensObject A : objB.getObjects()) {
+		for (RavensObject A : figB.getObjects()) {
 			list.add(A);
-			for (RavensObject B : objA.getObjects()) {
+			for (RavensObject B : figA.getObjects()) {
 				if (A.getName().equals(B.getName())) {
 					list.remove(A);
 					break;
@@ -101,17 +126,8 @@ public class Releationship {
 		return list;
 	}
 
-	public String getAttributeValue(RavensObject a, String key) {
-
-		for (RavensAttribute obj : a.getAttributes()) {
-			if (obj.getName().equals(key.toLowerCase())) {
-				return obj.getValue();
-			}
-		}
-		return null;
-	}
-	
 	public int getSides(RavensFigure obj) {
+
 		int sides = 0;
 		for (RavensObject A : obj.getObjects()) {
 			for (RavensAttribute aAttribute : A.getAttributes()) {
@@ -124,30 +140,40 @@ public class Releationship {
 	}
 
 	private void logRelationship() {
+
 		System.out.println("Total Sides fig." + objA.getName() + " "
 				+ getSides(objA));
 		System.out.println("Total Sides fig." + objB.getName() + " "
 				+ getSides(objB));
 		System.out.println();
-		System.out.println("Similarities:");
 
+		System.out.println("Total Objs fig." + objA.getName() + " "
+				+ objA.getObjects().size());
+		System.out.println("Total Objs fig." + objB.getName() + " "
+				+ objB.getObjects().size());
+		System.out.println();
+
+		System.out.println("Similarities:");
 		for (String sim : this.similaritiesList) {
 			String[] sarray = sim.split(":");
 			System.out.println((sarray[0] + " " + sarray[1] + " " + sarray[2]));
 		}
 
 		System.out.println();
+
 		System.out.println("Differences:");
 		for (String diff : this.differencesList) {
 			String[] sarray = diff.split(":");
 			System.out.println((sarray[0] + " " + sarray[1] + " " + sarray[2]));
 		}
 		System.out.println();
+
 		System.out.println("ShapesAdded:");
 		for (RavensObject obj : this.shapesAdded) {
 			System.out.println(obj.getName());
 		}
 		System.out.println();
+
 		System.out.println("ShapesDeleted:");
 		for (RavensObject obj : this.shapesDeleted) {
 			System.out.println(obj.getName());
@@ -159,76 +185,37 @@ public class Releationship {
 	public static double getRelationshipStrength(Releationship aReleationship,
 			Releationship bReleationship) {
 
-		double totalAttributes = getTotalAttributes(aReleationship);
 		double matchStrength = 0;
-
 		matchStrength += compareSides(aReleationship, bReleationship);
 		matchStrength += compareSimilarities(aReleationship, bReleationship);
 		matchStrength += compareDifferences(aReleationship, bReleationship);
 		matchStrength += compareShapesAdded(aReleationship, bReleationship);
 		matchStrength += compareShapesDeleted(aReleationship, bReleationship);
+		matchStrength += compareObjects(aReleationship, bReleationship);
 
 		// return strength of comparison
-		return (matchStrength / totalAttributes) * 100;
+		return matchStrength;
 
-	}
-
-	public static double getTotalAttributes(Releationship releationship) {
-
-		double totalAttributes = 0;
-		totalAttributes += releationship.similaritiesList.size();
-		totalAttributes += releationship.differencesList.size();
-
-		if (releationship.totalSidesA == releationship.totalSidesB) {
-			totalAttributes++;
-		}
-		else {
-			if (releationship.totalSidesA % releationship.totalSidesB == 0 || 
-					releationship.totalSidesB % releationship.totalSidesA == 0 ||
-					releationship.totalSidesA / releationship.totalSidesB == 2 || 
-					releationship.totalSidesB / releationship.totalSidesA == 2) {
-				totalAttributes++;
-			}
-		}
-
-		if (releationship.shapesAdded.size() == 0) {
-			totalAttributes++;
-		} else {
-			totalAttributes += releationship.shapesAdded.size();
-		}
-
-		if (releationship.shapesDeleted.size() == 0) {
-			totalAttributes++;
-		} else {
-			totalAttributes += releationship.shapesDeleted.size();
-		}
-
-		return totalAttributes;
 	}
 
 	public static double compareSides(Releationship aReleationship,
 			Releationship bReleationship) {
 		double strength = 0;
-		// sides
-		if (aReleationship.totalSidesA == aReleationship.totalSidesB) {
-			if (bReleationship.totalSidesA == aReleationship.totalSidesB) {
-				strength++;
-			}
-		} else {
-			if (aReleationship.totalSidesA % aReleationship.totalSidesB == 0
-					|| aReleationship.totalSidesA % aReleationship.totalSidesB == 0
-					|| aReleationship.totalSidesA / aReleationship.totalSidesB == 2
-					|| aReleationship.totalSidesB / aReleationship.totalSidesB == 2) {
+
+		// If shapes combined
+		if (aReleationship.shapesDeleted.size() == 1
+				&& aReleationship.totalSidesB == aReleationship.totalSidesA) {
+			if (bReleationship.shapesDeleted.size() == 1
+					&& bReleationship.totalSidesB == bReleationship.totalSidesA) {
 				strength++;
 			}
 		}
-
 		return strength;
 	}
 
 	public static double compareShapesDeleted(Releationship aReleationship,
 			Releationship bReleationship) {
-		 double strength = 0;
+		double strength = 0;
 		// shapes deleted
 		if (aReleationship.shapesDeleted.size() == bReleationship.shapesDeleted
 				.size()) {
@@ -239,7 +226,7 @@ public class Releationship {
 
 	public static double compareShapesAdded(Releationship aReleationship,
 			Releationship bReleationship) {
-		 double strength = 0;
+		double strength = 0;
 		// shapes added
 		if (aReleationship.shapesAdded.size() == bReleationship.shapesAdded
 				.size()) {
@@ -248,18 +235,29 @@ public class Releationship {
 		return strength;
 	}
 
+	public static double compareObjects(Releationship aReleationship,
+			Releationship bReleationship) {
+		double strength = 0;
+		// if obj counts are the same in AB then we expect same in Cn
+		if (aReleationship.objA.getObjects().size() == aReleationship.objB
+				.getObjects().size()) {
+			;
+			if (bReleationship.objA.getObjects().size() == bReleationship.objB
+					.getObjects().size()) {
+				strength++;
+			}
+		}
+		return strength;
+	}
+
 	public static double compareDifferences(Releationship aReleationship,
 			Releationship bReleationship) {
-		 double strength = 0;
 
-		if (aReleationship.differencesList.size() == bReleationship.differencesList
-				.size()) {
-			strength++;
-		}
-		
-		for (String stringa : aReleationship.differencesList) {
-			for (String stringb : bReleationship.differencesList) {
-				if (stringa.equals(stringb)) {
+		double strength = 0;
+
+		for (String A : aReleationship.differencesList) {
+			for (String B : bReleationship.differencesList) {
+				if (A.equals(B)) {
 					strength++;
 				}
 			}
@@ -269,28 +267,23 @@ public class Releationship {
 
 	public static double compareSimilarities(Releationship aReleationship,
 			Releationship bReleationship) {
-		 double strength = 0;
-		 
-		// similarities A to B vs C to n 
-		if (aReleationship.similaritiesList.size() == bReleationship.similaritiesList
-				.size()) {
+		double strength = 0;
+
+		// similarities A to B vs C to n
+		if (aReleationship.similaritiesList.size() == bReleationship.similaritiesList.size()) {
 			strength++;
-		}		
-		
-		String aString;
-		String bString;
+		}
+
 		for (String stringa : aReleationship.similaritiesList) {
 			String[] A = stringa.split(":");
-			aString = A[0] + A[1];
 			for (String stringb : bReleationship.similaritiesList) {
 				String[] B = stringb.split(":");
-				bString = B[0] +B[1];
-				if (aString.equals(bString)) {
+				if ((A[0] + A[1]).equals(B[0] + B[1])) {
 					strength++;
 				}
 			}
 		}
-	
+
 		return strength;
 	}
 
