@@ -148,11 +148,8 @@ public class Agent {
 
 	public boolean figuresEqual(RavensFigure A,RavensFigure B) {
 		
-		ArrayList<RavensObject> aa = A.getObjects();
-		ArrayList<RavensObject> bb = B.getObjects();
-		
 		String aString ="";
-		for (RavensObject ravensObject : aa) {
+		for (RavensObject ravensObject : A.getObjects()) {
 			 aString += ravensObject.getName();
 			for (RavensAttribute attribute : ravensObject.getAttributes()) {
 				aString += attribute.getName() + attribute.getValue() ;
@@ -160,7 +157,7 @@ public class Agent {
 		}
 
 		String bString="";
-		for (RavensObject ravensObject : bb) {
+		for (RavensObject ravensObject : B.getObjects()) {
 			bString += ravensObject.getName();
 			for (RavensAttribute attribute : ravensObject.getAttributes()) {
 				bString += attribute.getName() + attribute.getValue() ;

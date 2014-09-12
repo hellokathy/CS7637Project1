@@ -192,7 +192,7 @@ public class Releationship {
 		matchStrength += compareShapesAdded(aReleationship, bReleationship);
 		matchStrength += compareShapesDeleted(aReleationship, bReleationship);
 		matchStrength += compareObjects(aReleationship, bReleationship);
-
+		matchStrength += compareRotation(aReleationship, bReleationship);
 		// return strength of comparison
 		return matchStrength;
 
@@ -213,6 +213,37 @@ public class Releationship {
 		return strength;
 	}
 
+	public static double compareRotation(Releationship aReleationship,
+			Releationship bReleationship) {
+		double strength = 0;
+
+		ArrayList<String> aRotationList = new ArrayList<String>();
+		for (String stringa : aReleationship.differencesList) {
+
+			String[] A = stringa.split(":");
+			if (A[1].equals("angle")) {
+				aRotationList.add(stringa);
+			}
+		}
+		
+		ArrayList<String> bRotationList = new ArrayList<String>();
+		for (String stringa : bReleationship.differencesList) {
+			String[] B = stringa.split(":");
+			if (B[1].equals("angle")) {
+				bRotationList.add(stringa);
+			}
+		}
+
+		// if 100% of objects rotated
+		if (aReleationship.objB.getObjects().size() == aRotationList.size()) {
+			if (bReleationship.objB.getObjects().size() == bRotationList.size()) {
+				strength += 5;
+			}
+		}
+
+		return strength;
+	}
+	
 	public static double compareShapesDeleted(Releationship aReleationship,
 			Releationship bReleationship) {
 		double strength = 0;
@@ -254,7 +285,11 @@ public class Releationship {
 			Releationship bReleationship) {
 
 		double strength = 0;
-
+		
+		if (aReleationship.differencesList.size() == bReleationship.differencesList.size()) {
+			strength+= 2;
+		}
+		
 		for (String A : aReleationship.differencesList) {
 			for (String B : bReleationship.differencesList) {
 				if (A.equals(B)) {
@@ -271,7 +306,7 @@ public class Releationship {
 
 		// similarities A to B vs C to n
 		if (aReleationship.similaritiesList.size() == bReleationship.similaritiesList.size()) {
-			strength++;
+			strength+= 2;
 		}
 
 		for (String stringa : aReleationship.similaritiesList) {
